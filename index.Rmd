@@ -1,0 +1,19 @@
+---
+title: Evolutionary Genomics and Bioinformatics - FA20
+author: Berent Aldikacti
+date: "8/31/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+bibliography: data/references.bib
+---
+
+This is rendering hmtl files from the course repository  (https://github.com/jeffreyblanchard/evogeno) for Evolutionary Genomics & Bioinformatics taught at the University of Massachusetts Amherst in Fall 2020 by Prof. Jeffrey Blanchard
+
+## Labs
+
+### R Basics
+
+* 1 : [Introduction to R and Reproducible Research](Lab1_BA.html)
+* 2 : [git, GitHub and Rstudio project](Lab2_BA.html)
