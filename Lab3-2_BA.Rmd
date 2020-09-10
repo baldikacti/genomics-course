@@ -1,0 +1,88 @@
+---
+title: Lab3-2_BA
+author: Berent Aldikacti
+date: "9/7/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Practice
+```{python}
+text = "Data Carpentry"
+type(text)
+text
+print(text)
+2+2
+6*7
+2**16
+13%5
+```
+
+### Logic operators
+```{python}
+3 > 4
+True and True
+True and False
+```
+
+### Lists
+```{python}
+numbers = [1,2,3]
+numbers[0]
+for num in numbers:
+    print(num)
+```
+
+### Methods
+```{python}
+numbers.append(4)
+print(numbers)
+```
+
+### Tuples use parentheses
+```{python}
+a_tuple = (1, 2, 3)
+another_tuple = ('blue', 'green', 'red')
+```
+
+### Dictionaries
+```{python}
+translation = {'one': 'first', 'two': 'second'}
+translation['one']
+rev = {'first': 'one', 'second': 'two'}
+rev['first']
+rev['third'] = 'three'
+rev
+```
+
+### For loops for dictionaries
+```{python}
+for key, value in rev.items():
+    print(key, '->', value)
+for key in rev.keys():
+    print(key, '->', rev[key])
+
+```
+
+### Exercise
+```{python}
+rev
+rev['second'] = '2'
+print(rev)
+```
+
+### Functions
+```{python}
+def add_function(a, b):
+    result = a + b
+    return result
+
+z = add_function(20, 22)
+print(z)
+```
