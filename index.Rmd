@@ -21,3 +21,4 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 ### Python Basics
 * 3.2 : [Short Introduction to Programming in Python](Lab3-2_BA.html)
 * 3.3 : [Starting with Data](Lab3-3-Python_BA.html)
+* 3.4 : [Indexing, Slicing and Subsetting DataFrames in Python](Lab3-4-Python_BA.html)
