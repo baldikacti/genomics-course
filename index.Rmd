@@ -26,3 +26,6 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 4.2 : [Combining DataFrames and Pandas](Lab4-2-Python_BA.html)
 * 4.3 : [Data Workflows and Automation](Lab4-3-Python_BA.html)
 * 4.4 : [Making Plots with plotnine](Lab4-4-Python_BA.html)
+* 5.1 : [Data Ingest and Visualization - Matplotlib and Pandas](Lab5-1-Python_BA.html)
+* 5.2 : [Accessing SQLite Databases Using Python and Pandas](Lab5-2-Python_BA.html)
+
