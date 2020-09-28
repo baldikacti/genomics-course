@@ -1,7 +1,7 @@
 ---
 title: Evolutionary Genomics and Bioinformatics - FA20
 author: Berent Aldikacti
-date: "09/10/2020"
+date: "09/27/2020"
 output:
   prettydoc::html_pretty:
     theme: cayman
@@ -17,6 +17,8 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 
 * 1 : [Introduction to R and Reproducible Research](Lab1_BA.html)
 * 2 : [git, GitHub and Rstudio project](Lab2_BA.html)
+* 5.1 : [Data visualization with ggplot2](Lab5.1-R_BA.html)
+* 5.2 : [Lab5 Exercises](Lab5.2-R_BA.html)
 
 ### Python Basics
 * 3.2 : [Short Introduction to Programming in Python](Lab3-2_BA.html)

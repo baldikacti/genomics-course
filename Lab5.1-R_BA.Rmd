@@ -1,0 +1,113 @@
+---
+title: Lab5.1_BA
+author: Berent Aldikacti
+date: "9/27/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load packages
+```{r message=FALSE}
+library("tidyverse")
+```
+
+### Load data
+```{r, message=FALSE}
+surveys_complete <- read_csv("data/surveys_complete.csv")
+```
+
+### Challenge (Optional)
+
+Examine the strenghts and weaknesses of hexbin plotting
+```{r}
+library("hexbin")
+surveys_plot <- ggplot(data = surveys_complete, 
+                       mapping = aes(x = weight, y = hindfoot_length))
+```
+
+Hexbin is useful when we want to show the density of data points in a densely populated plot
+```{r}
+surveys_plot +
+ geom_hex() +
+  ggtitle("Hexbin Plot")
+```
+```{r}
+surveys_plot +
+ geom_point() +
+  ggtitle("Dot Plot")
+```
+
+## Challenge
+
+Use what you just learned to create a scatter plot of *weight* over *species_id* with the plot types showing in different colors. Is this a good way to show this type of data?
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight, color=plot_type)) +
+    geom_point()
+```
+*Answer:* This is not a good way to show this data because it is hard to see if there are any patterns to weight among plot_type.
+
+## Challenges
+
+1. Replace the box plot with a violin plot; see geom_violin().
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_violin()
+```
+
+2. Represent weight on the log10 scale; see scale_y_log10().
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  geom_violin() +
+  scale_y_log10()
+```
+
+3. Create boxplot for hindfoot_length. Overlay the boxplot layer on a jitter layer to show actual measurements.
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+   geom_boxplot() +
+   geom_jitter()
+```
+
+4. Add color to the data points on your boxplot according to the plot from which the sample was taken (plot_id).
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length, color=factor(plot_id))) +
+   geom_boxplot() +
+   geom_jitter()
+```
+
+## Challenge
+
+Use what you just learned to create a plot that depicts how the *average weight* of each *species* changes through the *years*.
+```{r message=FALSE}
+surveys_complete %>% group_by(species_id,year) %>% summarize(ave_weight=mean(weight)) %>%
+  ggplot(aes(x=year,y=ave_weight)) + 
+  geom_line() + 
+  facet_wrap(vars(species_id))
+```
+
+## Challenge 
+
+With all of this information in hand, please take another five minutes to either improve one of the plots generated in this exercise or create a beautiful graph of your own. Use the RStudio ggplot2 cheat sheet for inspiration.
+
+```{r message=FALSE}
+surveys_complete %>% group_by(species_id,year) %>% summarize(ave_weight=mean(weight)) %>%
+  ggplot(aes(x=year,y=ave_weight)) + 
+  geom_line(size=1) + 
+  facet_wrap(vars(species_id)) +
+  theme_linedraw() +
+  labs(title = "Observed weight through time",
+        x = "Year of observation",
+        y = "Average Weight") +
+  theme(axis.text.x = element_text(size = 12, 
+                                   angle = 90, hjust = 0.5, 
+                                   vjust = 0.5),
+                    axis.text.y = element_text(size = 11),
+                    text=element_text(size = 14))
+```
+
