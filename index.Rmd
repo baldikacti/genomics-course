@@ -19,6 +19,7 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 2 : [git, GitHub and Rstudio project](Lab2_BA.html)
 * 5.1 : [Data visualization with ggplot2](Lab5.1-R_BA.html)
 * 5.2 : [Lab5 Exercises](Lab5.2-R_BA.html)
+* 5.extra : [Interactive Graphs and Animations from the COVID-19 reporting data](Lab5extra-R_BA.html)
 * 6 : [Data Maps and Interactive Graphs from the COVID-19 reporting data](Lab6-R_BA.html)
 
 ### Python Basics
