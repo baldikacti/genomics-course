@@ -159,7 +159,7 @@ ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) +
 
 4. Make an interactive plot using a state of your chosing using a theme different from used in the above exammples.
 ```{r message=FALSE}
-daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
   filter(Province_State == "Ohio") %>% 
   group_by(Admin2) %>% 
