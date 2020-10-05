@@ -1,0 +1,112 @@
+---
+title: "Lab 6 Report"
+author: Berent Aldikacti
+date: "10/05/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+bibliography: data/sample.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(maps)
+library(mapdata)
+library(lubridate)
+library(viridis)
+library(wesanderson)
+library(plotly)
+library(RColorBrewer)
+```
+
+
+```{r}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/10-03-2020.csv")) %>% 
+  rename(Long = "Long_") %>% mutate(Province_State = tolower(Province_State))
+
+statepop <- read_csv("data/statepop-1019.csv") %>% select(matches(c("NAME","POPESTIMATE"))) %>% mutate(NAME = tolower(NAME))
+us <- map_data("state")
+state_join <- left_join(us, daily_report, by = c("region" = "Province_State"))
+state_join <- left_join(state_join,statepop[,c("NAME","POPESTIMATE2019")], by = c("region" = "NAME"))
+state_join <- state_join %>% mutate(PercentRecovered = (Recovered/Confirmed)*100,
+                                    Confirmedbypop = (Confirmed/POPESTIMATE2019)*100,
+                                    Deathbypop = (Deaths/POPESTIMATE2019)*100,
+                                    PercentActive = (Active/POPESTIMATE2019)*100)
+```
+
+# REPORT ON LATEST US COVID19 STATISTICS
+
+Here in this report I will be presenting state-level data on several US COVID19 statistics using the JHU CSSE COVID-19 data. (@Dong2020)
+
+The first statistic we are going to look at is the total number of COVID19 deaths by the function of population for all the states. These are the updated data as of 10/03/2020. From this heat map we can see that New York, New Jersey, and Massachusetts are the hardest hit states when we look at the number of people died so far. 
+
+```{r}
+ggplotly(
+  ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+    coord_fixed(1.3) + 
+    # Add data layer
+    borders("state", colour = "black") +
+    geom_polygon(data = state_join, aes(fill = Deathbypop, label=region)) +
+    scale_fill_distiller(palette = "RdBu",
+                         name = "% Death",
+                         na.value = "Gray", direction = -1) +
+    ggtitle("Percent of People Died by US State") +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank())
+)
+```
+
+Next we can look at how many people recovered by state. In this statistic we are looking at total number of patients recovered as a function of total patients confirmed. This tells us a little bit of a different story where states like Kansas, Colorado, Arizona, Nevada, and Oregon where the total number of deaths are lower compared to other states, the percent recovery rate is also very low. This suggests that most likely the peak of the infection happened later in these states, and they still have more active cases. 
+
+```{r}
+ggplotly(
+  ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+    coord_fixed(1.3) + 
+    # Add data layer
+    borders("state", colour = "black") +
+    geom_polygon(data = state_join, aes(fill = PercentRecovered, label=region)) +
+    scale_fill_distiller(palette = "RdBu",
+                         name = "% Recovered",
+                         na.value = "Gray", direction = 1) +
+    ggtitle("Percent of People Died by US State") +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank())
+)
+```
+
+To understand more about why some states have very low recovery but also low death rates, we next looked at percent active cases by state. In this statistic we are looking at total number of active cases as a function of the whole state population. This map explains some of the inconsistancies we saw with the pervious plot. Here we can see that Kansas, Nevada, Arizona, and Colorado have >%1 active cases which is on the higher than the average for US. Surprisingly, Florida and Georgia has ~%3 active cases in US with the highest active case rates. 
+
+```{r}
+ggplotly(
+  ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+    coord_fixed(1.3) + 
+    # Add data layer
+    borders("state", colour = "black") +
+    geom_polygon(data = state_join, aes(fill = PercentActive, label=region)) +
+    scale_fill_distiller(palette = "RdBu",
+                         name = "% Active",
+                         na.value = "Gray", direction = -1) +
+    ggtitle("Percent Active Cases by US State") +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank())
+)
+```
+
+# REFERENCES
