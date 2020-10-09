@@ -57,7 +57,7 @@ Report_Type = c("Confirmed", "Deaths","Recovered")
 ui <- fluidPage(
     
     # Application title
-    titlePanel("Example Graphs from COVID-19 Reporting data"),
+    titlePanel("Statistics on COVID19 for the Course EVOGENO-FA20"),
     p("Data for this application are from the Johns Hopkins Center for Systems Science and Engineering",
       tags$a("GitHub Repository", href="https://github.com/CSSEGISandData")
     ),
@@ -117,9 +117,9 @@ server <- function(input, output) {
                      geom_polygon(data = country_join, aes_string(fill = input$select_type, label="region", text= paste(input$select_type)), color = "black") +
                      scale_fill_gradientn(colours = 
                                               wes_palette("Zissou1", 100, type = "continuous"),
-                                          trans="log10") +
+                                              trans="log10") +
                      ggtitle(paste("JHU COVID-19 data for reporting type:",input$select_type)),
-                 tooltip = c("text","label"))
+                     tooltip = c("text","label"))
     })
     
     output$Plot2 <- renderPlotly({
@@ -139,9 +139,9 @@ server <- function(input, output) {
                  labs(title = paste("COVID19 Total Confirmed and Recovered Statistics of",unique(data_country$Country_Region)),
                       x = "Date",
                       y = "Counts") +
-                 theme(axis.text.x = element_text(size = 16),
-                       axis.text.y = element_text(size = 16),
-                       text=element_text(size = 16)),
+                 theme(axis.text.x = element_text(size = 12),
+                       axis.text.y = element_text(size = 12),
+                       text=element_text(size = 12)),
                tooltip = c("Date","Counts"))
       
     })
@@ -160,9 +160,9 @@ server <- function(input, output) {
                  labs(title = paste("COVID19 Total Confirmed and Recovered Statistics of",unique(data_country$Country_Region)),
                       x = "Date",
                       y = "Deaths") +
-                 theme(axis.text.x = element_text(size = 16),
-                       axis.text.y = element_text(size = 16),
-                       text=element_text(size = 16)),
+                 theme(axis.text.x = element_text(size = 12),
+                       axis.text.y = element_text(size = 12),
+                       text=element_text(size = 12)),
                tooltip = c("Date","Deaths"))
       
     })
