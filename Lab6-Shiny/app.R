@@ -9,35 +9,35 @@ library(plotly)
 ### Preparing the times series data
 
 time_series_confirmed_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
-    rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
-    pivot_longer(-c(Province_State, Country_Region, Lat, Long),
-                 names_to = "Date", values_to = "Confirmed") 
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Confirmed") 
 # Let's get the times series data for deaths
 time_series_deaths_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
-    rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
-    pivot_longer(-c(Province_State, Country_Region, Lat, Long),
-                 names_to = "Date", values_to = "Deaths")
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
+  pivot_longer(-c(Province_State,Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Deaths")
 
 time_series_recovered_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")) %>%
-    rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
-    pivot_longer(-c(Province_State, Country_Region, Lat, Long),
-                 names_to = "Date", values_to = "Recovered")
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")  %>% 
+  pivot_longer(-c(Province_State,Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Recovered")
 
 
 # Create Keys 
 time_series_confirmed_long <- time_series_confirmed_long %>% 
-    unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+  unite(Key, Country_Region, Date, sep = ".", remove = FALSE)
 time_series_deaths_long <- time_series_deaths_long %>% 
-    unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
-    select(Key, Deaths)
+  unite(Key, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
 time_series_recovered_long <- time_series_recovered_long %>% 
-    unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
-    select(Key, Recovered)
+  unite(Key, Country_Region, Date, sep = ".") %>% 
+  select(Key, Recovered)
 
 # Join tables
 time_series_long_joined <- list(time_series_confirmed_long, time_series_deaths_long, time_series_recovered_long) %>% 
-    reduce(full_join, by = "Key") %>% 
-    select(-Key)
+  reduce(full_join, by = "Key") %>% 
+  select(-Key)
 
 # Reformat the data 
 time_series_long_joined$Date <- mdy(time_series_long_joined$Date)
@@ -70,14 +70,20 @@ ui <- fluidPage(
             selectInput("select_type", 
                         label = "Report Type", 
                         choices = Report_Type, selected = "Confirmed"),
+            #Select country
+            selectInput("select_country", 
+                        label = "Country", 
+                        choices = unique(global_time_series$Country_Region), selected = "US"),
             # Select Date 
             sliderInput("slider_date", label = "Report Date", min = first_date, 
-                        max = last_date, value = first_date, step = 7)
+                        max = last_date, value = c(first_date,last_date), step = 7)
         ),
         
         # Show a plots
         mainPanel(
-            plotlyOutput("Plot1")
+            plotlyOutput("Plot1"),
+            plotlyOutput("Plot2"),
+            plotlyOutput("Plot3")
         )
     )
 )
@@ -91,7 +97,7 @@ server <- function(input, output) {
             # Fix mapping to map_data of US != USA  
             # mutate(Country_Region = recode(Country_Region, US = "USA")) %>% 
             # *** This is where the slider input with the date goes
-            filter(Date == input$slider_date) %>% 
+            filter(Date >= input$slider_date[1] & Date <= input$slider_date[2]) %>% 
             group_by(Country_Region) %>% 
             summarise_at(c("Confirmed", "Deaths","Recovered"), sum)
         
@@ -114,6 +120,51 @@ server <- function(input, output) {
                                           trans="log10") +
                      ggtitle(paste("JHU COVID-19 data for reporting type:",input$select_type)),
                  tooltip = c("text","label"))
+    })
+    
+    output$Plot2 <- renderPlotly({
+      # develop data set to graph
+      data_country <- global_time_series %>% 
+        filter(Date >= input$slider_date[1] & Date <= input$slider_date[2]) %>%
+        filter (Country_Region == input$select_country) %>%
+        group_by(Country_Region,Date) %>% 
+        summarise_at(c("Confirmed", "Recovered"), sum) %>% 
+        pivot_longer(-c(Country_Region, Date),
+                     names_to = "Status", values_to = "Counts") 
+      
+      
+      ggplotly(ggplot(data_country, aes(x = Date,  y = Counts, color = Status)) + 
+                 geom_line(size=1) +
+                 theme_bw() +
+                 labs(title = paste("COVID19 Total Confirmed and Recovered Statistics of",unique(data_country$Country_Region)),
+                      x = "Date",
+                      y = "Counts") +
+                 theme(axis.text.x = element_text(size = 16),
+                       axis.text.y = element_text(size = 16),
+                       text=element_text(size = 16)),
+               tooltip = c("Date","Counts"))
+      
+    })
+    
+    output$Plot3 <- renderPlotly({
+      # develop data set to graph
+      data_country <- global_time_series %>% 
+        filter(Date >= input$slider_date[1] & Date <= input$slider_date[2]) %>%
+        filter (Country_Region == input$select_country) %>%
+        group_by(Country_Region,Date) %>% 
+        summarise_at(c("Deaths"), sum)
+      
+      ggplotly(ggplot(data_country, aes(x = Date,  y = Deaths)) + 
+                 geom_line(size=1,color="Red") +
+                 theme_bw() +
+                 labs(title = paste("COVID19 Total Confirmed and Recovered Statistics of",unique(data_country$Country_Region)),
+                      x = "Date",
+                      y = "Deaths") +
+                 theme(axis.text.x = element_text(size = 16),
+                       axis.text.y = element_text(size = 16),
+                       text=element_text(size = 16)),
+               tooltip = c("Date","Deaths"))
+      
     })
 }
 
