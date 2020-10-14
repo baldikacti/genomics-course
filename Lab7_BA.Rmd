@@ -1,5 +1,5 @@
 ---
-title: "Lab 7 - Differential Expression Analysis"
+title: "Lab 7 - RNA-Seq workflow: gene-level exploratory analysis and differential expression"
 author: Berent Aldikacti
 date: "10/14/2020"
 output:
