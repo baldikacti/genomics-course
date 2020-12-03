@@ -23,6 +23,8 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 6-Report : [REPORT ON LATEST US COVID19 STATISTICS](Lab6-report-R.html)
 * 6-Shiny : [R Shiny apps using the COVID-19 reporting data](https://berent-aldikacti.shinyapps.io/Lab6-Shiny/)
 * 7 : [RNA-Seq workflow: gene-level exploratory analysis and differential expression](Lab7_BA.html)
+* 8 : [Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8-BA.html)
+
 
 ### Python Basics
 * 3.2 : [Short Introduction to Programming in Python](Lab3-2_BA.html)
