@@ -1,0 +1,134 @@
+---
+title: "Lab9x - Programming in R - Control Structures and Functions"
+author: Berent Aldikacti"
+date: "12/03/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r style, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+library("BiocStyle")
+library("knitr")
+library("rmarkdown")
+library(tidyverse)
+library(ggtree)
+opts_chunk$set(message = FALSE, error = FALSE, warning = FALSE,
+               cache = FALSE, fig.width = 5, fig.height = 5)
+
+```
+
+## Generate a uniform random number
+```{r}
+x <- runif(1, 0, 10)  
+if(x >= 5) {
+        y <- 10
+} else {
+        y <- 0
+}
+print(paste("x =",x))
+print(paste("y =",y))
+```
+
+# for Loops
+```{r}
+for(i in 1:10) {
+  x <- runif(1, 0, 10)  
+       if(x >= 5) {
+        y <- 10
+} else {
+        y <- 0
+}
+print(paste("x =",x))
+print(paste("y =",y))
+}
+```
+
+## Generate a sequence based on length of 'x'
+```{r}
+x <- runif(10, 0, 100)
+for(i in seq_along(x)) {   
+        print(x[i])
+}
+```
+
+```{r}
+for(letter in x) {
+        print(letter)
+}
+```
+
+```{r}
+for(i in 1:4) print(x[i])
+```
+
+# Nested For Loops
+```{r}
+x <- matrix(1:6, 2, 3)
+for(i in seq_len(nrow(x))) {
+        for(j in seq_len(ncol(x))) {
+                print(x[i, j])
+        }   
+}
+```
+
+# While Loops
+```{r}
+count <- 10
+while(count < 100) {
+        print(count)
+        count <- count * 2
+}
+```
+
+```{r}
+z <- 5
+set.seed(1)
+while(z >= 3 && z <= 10) {
+        coin <- rbinom(1, 1, 0.5)
+        
+        if(coin == 1) {  ## random walk
+                z <- z + 1
+        } else {
+                z <- z - 1
+        } 
+}
+print(z)
+```
+
+# Functions
+
+```{r}
+f <- function() {
+        cat("Hello, world!")
+}
+f()
+```
+
+```{r}
+f <- function(num) {
+        for(i in seq_len(num)) {
+                cat("Hello, world!")
+        }
+}
+f(10)
+```
+
+```{r}
+f <- function(num) {
+        hello <- "Hello, world!\n"
+        bye <- "Bye, world!\n"
+        for(i in seq_len(num)) {
+                cat(hello,bye)
+        }
+        chars <- (nchar(hello) + nchar(bye)) * num
+        chars
+}
+meaningoflife <- f(3)
+```
+
+```{r}
+print(meaningoflife)
+```
+
