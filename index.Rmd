@@ -24,6 +24,7 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 6-Shiny : [R Shiny apps using the COVID-19 reporting data](https://berent-aldikacti.shinyapps.io/Lab6-Shiny/)
 * 7 : [RNA-Seq workflow: gene-level exploratory analysis and differential expression](Lab7_BA.html)
 * 8 : [Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8-BA.html)
+* 9 : [Programming in R - Regular Expression](Lab9-BA.html)
 
 
 ### Python Basics

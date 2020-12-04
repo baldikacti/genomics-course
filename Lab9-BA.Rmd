@@ -1,0 +1,482 @@
+---
+title: "Lab 9 - Programming in R - Regular Expressions"
+author: Berent Aldikacti
+date: "12/03/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+
+```{r style, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+library("BiocStyle")
+library("knitr")
+library("rmarkdown")
+library(stringr)
+library(tidyverse)
+opts_chunk$set(message = FALSE, error = FALSE, warning = FALSE,
+               cache = FALSE, fig.width = 5, fig.height = 5)
+
+```
+
+
+```{r}
+x <- c("apple", "banana", "pear")
+str_view(x, "an")
+```
+```{r}
+str_view(x, ".a.") # dot is used to represent any character
+```
+```{r}
+# To escape the regular behaviour of "." we use a escape "\\".  
+# To create the regular expression, we need \\
+dot <- "\\."
+
+# But the expression itself only contains one:
+writeLines(dot)
+```
+
+```{r}
+# And this tells R to look for an explicit .
+x <- c("abc", "a.c", "bef")
+str_view(x, "a\\.c") # This tells to look for an actual dot instead of the regular behaviour of dot
+```
+```{r}
+x <- "a\\b"
+writeLines(x)
+str_view(x, "\\\\")
+```
+
+## Exercise 14.3.1.1
+
+1. Explain why each of these strings don’t match a \: "\", "\\", "\\\".
+
+Backslash is used as a escape in regex and it is also a string.  
+
+"\" : This will escape the next R string character
+"\\" : This will resolve to literal \ in regex which will escape the next character regex. 
+"\\\" : First two will resolve to literal \ in regex and the last \ will escape a character. In regex, this will escape an escaped character
+
+
+# 14.3.2 Anchors
+
+* ^ to match the start of the string.
+* $ to match the end of the string.
+
+```{r}
+x <- c("apple", "banana", "pear")
+str_view(x, "^a")
+```
+```{r}
+str_view(x, "a$")
+```
+
+```{r}
+x <- c("apple pie", "apple", "apple cake")
+str_view(x, "apple")
+str_view(x, "^apple$")
+```
+
+```{r}
+str_view(x, "\bapple\b")
+```
+
+
+## 14.3.2.1 Exercises
+
+1. How would you match the literal string "$^$"?
+```{r}
+x <- "$^$"
+str_view(x,"^\\$\\^\\$$")
+```
+
+# 14.3.3 Character classes and alternatives
+
+
+* \d : matches any digit.
+* \s : matches any whitespace (e.g. space, tab, newline).
+* [abc] : matches a, b, or c.
+* [^abc] : matches anything except a, b, or c.
+
+```{r}
+# Look for a literal character that normally has special meaning in a regex
+x <- c("abc", "a.c", "a*c", "a c")
+str_view(x, "a[.]c")
+str_view(x, ".[*]c")
+str_view(x, "a[ ]")
+```
+
+```{r}
+x <- c("grey", "gray")
+str_view(x, "gr(e|a)y")
+```
+
+## 14.3.3.1 Exercises
+
+1. Create regular expressions to find all words that:
+  * Start with a vowel.
+  * That only contain consonants. (Hint: thinking about matching “not”-vowels.)
+  * End with ed, but not with eed.
+  * End with ing or ise.
+
+```{r}
+str_subset(stringr::words, "^[a|e|i|o|u]")
+```
+
+```{r}
+str_subset(stringr::words, "[a|e|i|o|u]", negate = TRUE)
+```
+
+```{r}
+str_subset(stringr::words, "[^e]ed$")
+```
+
+# 14.3.4 Repetition
+
+
+* ?: 0 or 1
+* +: 1 or more
+* *: 0 or more
+
+
+```{r}
+x <- "1888 is the longest year in Roman numerals: MDCCCLXXXVIII"
+str_view(x, "CC?")
+```
+
+```{r}
+str_view(x, "CC+")
+```
+
+```{r}
+str_view(x, 'C[LX]+')
+```
+
+You can also specify the number of matches precisely:
+
+* {n}: exactly n
+* {n,}: n or more
+* {,m}: at most m
+* {n,m}: between n and m
+
+```{r}
+str_view(x, "C{2}")
+```
+
+```{r}
+str_view(x, "C{2,}")
+```
+
+By default these matches are “greedy”: they will match the longest string possible. You can make them “lazy”, matching the shortest string possible by putting a ? after them. This is an advanced feature of regular expressions, but it’s useful to know that it exists:
+```{r}
+str_view(x, 'C{2,3}?')
+```
+```{r}
+str_view(x, 'C[LX]+?')
+```
+
+## 14.3.4.1 Exercises
+
+1. Describe the equivalents of ?, +, * in {m,n} form.
+
+? = {0,1}
++ = {1,}
+* = {0,}
+
+# 14.3.5 Grouping and backreferences
+
+```{r}
+str_view(fruit, "(..)\\1", match = TRUE)
+```
+
+## 14.3.5.1 Exercises
+
+1. Describe, in words, what these expressions will match:
+
+(.)\1\1 = The same character appearing three times in a row. E.g. "aaa"
+"(.)(.)\\2\\1" = A pair of characters followed by the same pair of characters in reversed order. E.g. "abba".
+(..)\1 = Any two characters repeated. E.g. "a1a1".
+"(.).\\1.\\1" = A character followed by any character, the original character, any other character, the original character again. E.g. "abaca", "b8b.b".
+"(.)(.)(.).*\\3\\2\\1" = Three characters followed by zero or more characters of any kind followed by the same three characters but in reverse order. E.g. "abcsgasgddsadgsdgcba" or "abccba" or "abc1cba".
+
+# 14.4 Tools
+
+## 14.4.1 Detect matches
+
+```{r}
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+```
+
+
+```{r}
+# What proportion of common words end with a vowel?
+mean(str_detect(words, "[aeiou]$"))
+```
+
+```{r}
+# Find all words containing at least one vowel, and negate
+no_vowels_1 <- !str_detect(words, "[aeiou]")
+# Find all words consisting only of consonants (non-vowels)
+no_vowels_2 <- str_detect(words, "^[^aeiou]+$")
+identical(no_vowels_1, no_vowels_2)
+```
+
+```{r}
+words[str_detect(words, "x$")]
+```
+
+```{r}
+str_subset(words, "x$")
+```
+
+```{r}
+df <- tibble(
+  word = words, 
+  i = seq_along(word)
+)
+df %>% 
+  filter(str_detect(word, "x$"))
+```
+```{r}
+x <- c("apple", "banana", "pear")
+str_count(x, "a")
+```
+
+```{r}
+# On average, how many vowels per word?
+mean(str_count(words, "[aeiou]"))
+```
+
+```{r}
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]"),
+    consonants = str_count(word, "[^aeiou]")
+  )
+```
+
+
+```{r}
+str_count("abababa", "aba")
+str_view_all("abababa", "aba")
+```
+
+## 14.4.1.1 Exercises
+
+1. For each of the following challenges, try solving it by using both a single regular expression, and a combination of multiple str_detect() calls.
+
+Find all words that start or end with x.
+```{r}
+str_subset(words, "^x|x$")
+```
+
+Find all words that start with a vowel and end with a consonant.
+```{r}
+str_subset(words, "^[aeiou]|[^aeiou]$")
+```
+
+Are there any words that contain at least one of each different vowel?
+
+
+```{r}
+words[str_detect(words, "a") &
+  str_detect(words, "e") &
+  str_detect(words, "i") &
+  str_detect(words, "o") &
+  str_detect(words, "u")]
+```
+
+# 14.4.2 Extract matches
+
+```{r}
+colours <- c("red", "orange", "yellow", "green", "blue", "purple")
+colour_match <- str_c(colours, collapse = "|")
+colour_match
+```
+
+```{r}
+has_colour <- str_subset(sentences, colour_match)
+matches <- str_extract(has_colour, colour_match)
+head(matches)
+```
+
+```{r}
+more <- sentences[str_count(sentences, colour_match) > 1]
+str_view_all(more, colour_match)
+```
+
+```{r}
+str_extract(more, colour_match)
+```
+
+```{r}
+str_extract_all(more, colour_match)
+```
+
+```{r}
+str_extract_all(more, colour_match, simplify = TRUE)
+```
+
+```{r}
+x <- c("a", "a b", "a b c")
+str_extract_all(x, "[a-z]", simplify = TRUE)
+```
+
+## 14.4.2.1 Exercises
+
+1. In the previous example, you might have noticed that the regular expression matched “flickered”, which is not a colour. Modify the regex to fix the problem.
+
+```{r}
+colours <- c("red", "orange", "yellow", "green", "blue", "purple")
+colour_match2 <- str_c("\\b(", str_c(colours, collapse = "|"), ")\\b")
+colour_match2
+more2 <- sentences[str_count(sentences, colour_match) > 1]
+str_view_all(more2, colour_match2, match = TRUE)
+```
+
+# 14.4.3 Grouped matches
+
+```{r}
+noun <- "(a|the) ([^ ]+)"
+
+has_noun <- sentences %>%
+  str_subset(noun) %>%
+  head(10)
+has_noun %>% 
+  str_extract(noun)
+```
+
+```{r}
+has_noun %>% 
+  str_match(noun)
+```
+
+```{r}
+tibble(sentence = sentences) %>% 
+  tidyr::extract(
+    sentence, c("article", "noun"), "(a|the) ([^ ]+)", 
+    remove = FALSE
+  )
+```
+
+## 14.4.3.1 Exercises
+
+1. Find all words that come after a “number” like “one”, “two”, “three” etc. Pull out both the number and the word.
+
+```{r}
+numword <- "\\b(one|two|three|four|five|six|seven|eight|nine|ten) +(\\w+)"
+sentences[str_detect(sentences, numword)] %>%
+  str_extract(numword)
+```
+
+# 14.4.4 Replacing matches
+
+```{r}
+x <- c("apple", "pear", "banana")
+str_replace(x, "[aeiou]", "-")
+```
+
+```{r}
+str_replace_all(x, "[aeiou]", "-")
+```
+
+```{r}
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+```
+
+Instead of replacing with a fixed string you can use backreferences to insert components of the match. In the following code, I flip the order of the second and third words.
+```{r}
+sentences %>% 
+  str_replace("([^ ]+) ([^ ]+) ([^ ]+)", "\\1 \\3 \\2") %>% 
+  head(5)
+```
+
+## 14.4.4.1 Exercises
+
+1. Replace all forward slashes in a string with backslashes.
+
+```{r}
+x <- "///\\]/]/]/]/"
+x %>% str_replace_all("/","\\\\")
+```
+
+# 14.4.5 Splitting
+
+```{r}
+sentences %>%
+  head(5) %>% 
+  str_split(" ")
+```
+
+```{r}
+"a|b|c|d" %>% 
+  str_split("\\|") %>% 
+  .[[1]]
+```
+
+```{r}
+sentences %>%
+  head(5) %>% 
+  str_split(" ", simplify = TRUE)
+```
+
+```{r}
+fields <- c("Name: Hadley", "Country: NZ", "Age: 35")
+fields %>% str_split(": ", n = 2, simplify = TRUE)
+```
+
+```{r}
+x <- "This is a sentence.  This is another sentence."
+str_view_all(x, boundary("word"))
+```
+```{r}
+str_split(x, " ")[[1]]
+```
+
+```{r}
+str_split(x, boundary("word"))[[1]]
+```
+
+## 14.4.5.1 Exercises
+
+1. Split up a string like “apples, pears, and bananas” into individual components.
+
+```{r}
+x <- "apples, pears, and bananas"
+str_split(x, boundary("word"))[[1]]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
