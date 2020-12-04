@@ -26,6 +26,7 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 8 : [Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8-BA.html)
 * 9 : [Programming in R - Regular Expression](Lab9-BA.html)
 * 9x : [Programming in R - Control Structures and Functions](Lab9x.html)
+* 10 : [Population genomics based on high throughput sequencing (HTS)](Lab10-BA.html)
 
 
 ### Python Basics
