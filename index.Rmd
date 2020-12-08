@@ -27,6 +27,10 @@ This is rendering hmtl files from the course repository  (https://github.com/jef
 * 9 : [Programming in R - Regular Expression](Lab9-BA.html)
 * 9x : [Programming in R - Control Structures and Functions](Lab9x.html)
 * 10 : [Population genomics based on high throughput sequencing (HTS)](Lab10-BA.html)
+* 11 : [Microbiome Analysis using dada2 and phyloseq](Lab11-BA.html)
+* 11x : [Microbiome Analysis using phyloseq](Lab11x-BA.html)
+* 12 : [Network Analysis using Cytoscape and RCy3](Lab12-BA.html)
+
 
 
 ### Python Basics

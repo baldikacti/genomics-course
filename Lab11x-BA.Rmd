@@ -1,0 +1,366 @@
+---
+title: "Lab11x - Microbiome Analysis using phyloseq"
+author: Berent Aldikacti"
+date: "12/07/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+# Ordination
+
+```{r style, echo=TRUE, message=FALSE, warning=FALSE, results="asis"}
+library("BiocStyle")
+library("knitr")
+library("rmarkdown")
+library("phyloseq"); packageVersion("phyloseq")
+data(GlobalPatterns)
+library("ggplot2"); packageVersion("ggplot2")
+library("plyr"); packageVersion("plyr")
+theme_set(theme_bw())
+opts_chunk$set(message = FALSE, error = FALSE, warning = FALSE,
+               cache = FALSE, fig.width = 8, fig.height = 5)
+```
+
+```{r}
+#Remove OTUs that do not show appear more than 5 times in more than half the samples
+
+GP = GlobalPatterns
+wh0 = genefilter_sample(GP, filterfun_sample(function(x) x > 5), A=0.5*nsamples(GP))
+GP1 = prune_taxa(wh0, GP)
+
+#Transform to even sampling depth.
+
+GP1 = transform_sample_counts(GP1, function(x) 1E6 * x/sum(x))
+
+#Keep only the most abundant five phyla.
+
+phylum.sum = tapply(taxa_sums(GP1), tax_table(GP1)[, "Phylum"], sum, na.rm=TRUE)
+top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+GP1 = prune_taxa((tax_table(GP1)[, "Phylum"] %in% top5phyla), GP1)
+# Define a human-associated versus non-human categorical variable:
+human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+sample_data(GP1)$human <- factor(human)
+```
+
+## Four main ordination plots
+
+### Just OTUs
+
+```{r}
+GP.ord <- ordinate(GP1, "NMDS", "bray")
+p1 = plot_ordination(GP1, GP.ord, type="taxa", color="Phylum", title="taxa")
+print(p1)
+```
+
+```{r}
+p1 + facet_wrap(~Phylum, 3)
+```
+
+### Just samples
+
+```{r}
+p2 = plot_ordination(GP1, GP.ord, type="samples", color="SampleType", shape="human") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+```
+
+### biplot graphic
+
+```{r}
+p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
+# Some stuff to modify the automatic shape scale
+GP1.shape.names = get_taxa_unique(GP1, "Phylum")
+GP1.shape <- 15:(15 + length(GP1.shape.names) - 1)
+names(GP1.shape) <- GP1.shape.names
+GP1.shape["samples"] <- 16
+p3 + scale_shape_manual(values=GP1.shape)
+```
+
+### split graphic
+
+```{r}
+p4 = plot_ordination(GP1, GP.ord, type="split", color="Phylum", shape="human", label="SampleType", title="split") 
+p4
+```
+
+```{r}
+gg_color_hue <- function(n){
+    hues = seq(15, 375, length=n+1)
+    hcl(h=hues, l=65, c=100)[1:n]
+}
+color.names <- levels(p4$data$Phylum)
+p4cols <- gg_color_hue(length(color.names))
+names(p4cols) <- color.names
+p4cols["samples"] <- "black"
+p4 + scale_color_manual(values=p4cols)
+```
+
+@# Supported Ordination Methods
+
+```{r}
+dist = "bray"
+ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
+plist = llply(as.list(ord_meths), function(i, physeq, dist){
+        ordi = ordinate(physeq, method=i, distance=dist)
+        plot_ordination(physeq, ordi, "samples", color="SampleType")
+}, GP1, dist)
+names(plist) <- ord_meths
+```
+
+```{r}
+pdataframe = ldply(plist, function(x){
+    df = x$data[, 1:2]
+    colnames(df) = c("Axis_1", "Axis_2")
+    return(cbind(df, x$data))
+})
+names(pdataframe)[1] = "method"
+```
+
+```{r}
+p = ggplot(pdataframe, aes(Axis_1, Axis_2, color=SampleType, shape=human, fill=SampleType))
+p = p + geom_point(size=4) + geom_polygon()
+p = p + facet_wrap(~method, scales="free")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p
+```
+
+```{r}
+plist[[2]] 
+```
+
+```{r}
+p = plist[[2]] + scale_colour_brewer(type="qual", palette="Set1")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + geom_point(size=5) + geom_polygon(aes(fill=SampleType))
+p
+```
+
+## MDS (“PCoA”) on Unifrac Distances
+
+```{r}
+ordu = ordinate(GP1, "PCoA", "unifrac", weighted=TRUE)
+plot_ordination(GP1, ordu, color="SampleType", shape="human")
+```
+
+```{r}
+p = plot_ordination(GP1, ordu, color="SampleType", shape="human")
+p = p + geom_point(size=7, alpha=0.75)
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p + ggtitle("MDS/PCoA on weighted-UniFrac distance, GlobalPatterns")
+```
+
+```{r clear environment}
+rm(list=ls()) 
+```
+
+
+# Alpha diversity graphics
+
+```{r Alpha div, echo=TRUE, message=FALSE, warning=FALSE, results="asis"}
+data("GlobalPatterns")
+theme_set(theme_bw())
+pal = "Set1"
+scale_colour_discrete <-  function(palname=pal, ...){
+  scale_colour_brewer(palette=palname, ...)
+}
+scale_fill_discrete <-  function(palname=pal, ...){
+  scale_fill_brewer(palette=palname, ...)
+}
+```
+
+## Prepare data
+
+```{r}
+GP <- prune_species(speciesSums(GlobalPatterns) > 0, GlobalPatterns)
+```
+
+## Plot Examples
+
+```{r}
+plot_richness(GP)
+```
+
+```{r}
+plot_richness(GP, measures=c("Chao1", "Shannon"))
+```
+
+```{r}
+plot_richness(GP, x="SampleType", measures=c("Chao1", "Shannon"))
+```
+
+```{r}
+sampleData(GP)$human <- getVariable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+```
+
+```{r}
+plot_richness(GP, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+```
+
+```{r}
+GPst = merge_samples(GP, "SampleType")
+# repair variables that were damaged during merge (coerced to numeric)
+sample_data(GPst)$SampleType <- factor(sample_names(GPst))
+sample_data(GPst)$human <- as.logical(sample_data(GPst)$human)
+```
+
+```{r}
+p = plot_richness(GPst, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+p + geom_point(size=5, alpha=0.7)
+```
+
+```{r}
+rm(list=ls())
+```
+
+
+# Heatmap Plots
+
+```{r}
+theme_set(theme_bw())
+data("GlobalPatterns")
+gpt <- subset_taxa(GlobalPatterns, Kingdom=="Bacteria")
+gpt <- prune_taxa(names(sort(taxa_sums(gpt),TRUE)[1:300]), gpt)
+plot_heatmap(gpt, sample.label="SampleType")
+```
+
+## Subset a smaller dataset based on an Archaeal phylum
+
+```{r}
+gpac <- subset_taxa(GlobalPatterns, Phylum=="Crenarchaeota")
+plot_heatmap(gpac)
+```
+
+## Re-label by a sample variable and taxonomic family
+
+```{r}
+(p <- plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family"))
+```
+
+## Re-label axis titles
+
+```{r}
+p$scales$scales[[1]]$name <- "My X-Axis"
+p$scales$scales[[2]]$name <- "My Y-Axis"
+print(p)
+```
+
+## Now repeat the plot, but change the color scheme.
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#CCFF66")
+```
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#FF3300")
+```
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#66CCFF")
+```
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#66CCFF", high="#000033", na.value="white")
+```
+
+```{r}
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#FFFFCC", high="#000033", na.value="white")
+```
+
+## Now try different ordination methods, distances
+
+```{r}
+plot_heatmap(gpac, "NMDS", "jaccard")
+```
+
+```{r}
+plot_heatmap(gpac, "DCA", "none", "SampleType", "Family")
+```
+
+Unconstrained redundancy analysis (Principle Components Analysis, PCA)
+```{r}
+plot_heatmap(gpac, "RDA", "none", "SampleType", "Family")
+```
+
+PCoA/MDS ordination on the (default) bray-curtis distance.
+```{r}
+plot_heatmap(gpac, "PCoA", "bray", "SampleType", "Family")
+```
+
+MDS/PCoA ordination on the Unweighted-UniFrac distance.
+```{r}
+plot_heatmap(gpac, "PCoA", "unifrac", "SampleType", "Family")
+```
+
+Now try weighted-UniFrac distance and MDS/PCoA ordination.
+```{r}
+plot_heatmap(gpac, "MDS", "unifrac", "SampleType", "Family", weighted=TRUE)
+```
+
+```{r}
+heatmap(otu_table(gpac))
+```
+
+```{r}
+rm(list=ls())
+```
+
+# Plot Microbiome Network
+
+```{r}
+data(enterotype)
+set.seed(711L)
+```
+
+
+```{r}
+plot_net(enterotype, maxdist = 0.4, point_label = "Sample_ID")
+```
+
+```{r}
+plot_net(enterotype, maxdist = 0.3, color = "SeqTech", shape="Enterotype")
+```
+
+```{r}
+# Create an igraph-based network based on the default distance method, “Jaccard”, and a maximum distance between connected nodes of 0.3.
+
+ig <- make_network(enterotype, max.dist=0.3)
+
+# Now plot this network representation with the default settings.
+
+plot_network(ig, enterotype)
+```
+
+```{r}
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+```
+
+```{r}
+ig <- make_network(enterotype, max.dist=0.2)
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+```
+
+```{r}
+ig <- make_network(enterotype, dist.fun="bray", max.dist=0.3)
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

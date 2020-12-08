@@ -1,0 +1,21 @@
+---
+title: "Lab12 - Network Analysis using Cytoscape and RCy3"
+author: Berent Aldikacti"
+date: "12/07/2020"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+# Basic Visualization with Cytoscape
+
+![galFiltered network](images/galFiltered network with data.png)
+
+# Differentially expressed genes
+
+## Up regulated genes
+![Up-regulated genes network](images/String Network-de genes up.png)
+
+## Down regulated genes
+![Down-regulated genes network](images/String Network-de genes down.png)
